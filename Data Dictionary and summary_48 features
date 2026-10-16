@@ -1,0 +1,610 @@
+# Moneyball Analytics — Data Dictionary (48-Feature Lasso Regression)
+
+**Project:** DS6-SCTP-DSAI Module 3 — Moneyball Analytics  
+**Model:** Tuned Lasso Regression  
+**Target Variable:** `W` — Total Team Wins  
+**Total Predictors:** 48  
+**Best Alpha:** 0.01  
+**Kaggle Public MAE:** 2.9100  
+
+---
+
+## 1. Dataset Overview
+
+The dataset contains historical Major League Baseball (MLB) team-season statistics.
+
+Each row represents one baseball team during one season.
+
+The objective is to estimate a team's total wins (`W`) using offensive, pitching, defensive, historical and engineered baseball statistics.
+
+### Dataset Summary
+
+| Property | Value |
+|---|---|
+| Total Observations | 1,412 |
+| Training Observations | 1,129 |
+| Testing Observations | 283 |
+| Training Percentage | 80% |
+| Testing Percentage | 20% |
+| Baseline Features | 44 |
+| Additional Engineered Features | 4 |
+| **Total Modelling Features** | **48** |
+| Target Variable | `W` |
+| Machine Learning Type | Supervised Learning |
+| Prediction Task | Regression |
+| Algorithm | Lasso Regression |
+| Regularization | L1 |
+| Best Alpha | 0.01 |
+| Feature Scaling | StandardScaler |
+| Hyperparameter Tuning | GridSearchCV |
+| Cross-Validation | Five-Fold CV |
+| Additional Evaluation | Nested Cross-Validation |
+
+### Feature Distribution
+
+| Feature Category | Number |
+|---|---:|
+| Offensive Statistics | 10 |
+| Pitching Statistics | 11 |
+| Defensive Statistics | 3 |
+| League Scoring Context | 1 |
+| Historical Era Indicators | 8 |
+| Decade Indicators | 11 |
+| Engineered Features | 4 |
+| **Total** | **48** |
+
+---
+
+## 2. Target Variable
+
+| Column | Data Type | Definition | Modelling Role |
+|---|---|---|---|
+| `W` | Integer | Actual number of games won by the team during the season | Target |
+
+### Business Interpretation
+
+The objective is to predict how many games a baseball team wins based on its season-level performance statistics.
+
+For example:
+
+- Actual wins: 90
+- Predicted wins: 87
+- Absolute prediction error: 3 wins
+
+The prediction error is evaluated using Mean Absolute Error (MAE).
+
+The target is excluded from the 48 input features to prevent target leakage.
+
+---
+
+## 3. Offensive Statistics — 10 Features
+
+These variables measure a team's ability to create scoring opportunities and score runs.
+
+| No. | Column | Data Type | Definition | Unit |
+|---:|---|---|---|---|
+| 1 | `G` | Integer | Total games played during the season | Games |
+| 2 | `R` | Integer | Total runs scored | Runs |
+| 3 | `AB` | Integer | Total official at-bats | At-bats |
+| 4 | `H` | Integer | Total successful hits | Hits |
+| 5 | `2B` | Integer | Total doubles | Hits |
+| 6 | `3B` | Integer | Total triples | Hits |
+| 7 | `HR` | Integer | Total home runs | Home runs |
+| 8 | `BB` | Integer | Total batting walks | Walks |
+| 9 | `SO` | Numeric | Total batting strikeouts | Strikeouts |
+| 10 | `SB` | Integer | Total stolen bases | Stolen bases |
+
+### Business Rationale
+
+Offensive variables indicate how effectively a team produces runs.
+
+Examples:
+
+- Higher `R` indicates greater total run production.
+- Higher `H` indicates more successful batting hits.
+- Higher `HR` indicates greater home-run production.
+- Higher `BB` indicates more opportunities to reach base through walks.
+
+**Relevance to Win Prediction:** Teams with stronger offensive performance may achieve more wins, although total wins also depend on pitching, defense and other factors.
+
+---
+
+## 4. Pitching Statistics — 11 Features
+
+These variables measure a team's pitching performance and its ability to prevent opposing teams from scoring.
+
+| No. | Column | Data Type | Definition | Unit |
+|---:|---|---|---|---|
+| 11 | `RA` | Integer | Total runs allowed to opponents | Runs |
+| 12 | `ER` | Integer | Total earned runs allowed | Earned runs |
+| 13 | `ERA` | Float | Earned Run Average | Earned runs per 9 innings |
+| 14 | `CG` | Integer | Complete games pitched | Games |
+| 15 | `SHO` | Integer | Team shutouts | Games |
+| 16 | `SV` | Integer | Saves recorded | Saves |
+| 17 | `IPouts` | Integer | Total pitching outs recorded | Outs |
+| 18 | `HA` | Integer | Hits allowed | Hits |
+| 19 | `HRA` | Integer | Home runs allowed | Home runs |
+| 20 | `BBA` | Integer | Walks allowed by pitchers | Walks |
+| 21 | `SOA` | Integer | Strikeouts recorded by pitchers | Strikeouts |
+
+### Business Rationale
+
+Pitching statistics provide information about how effectively a team restricts its opponents.
+
+Examples:
+
+- Lower `RA` indicates fewer runs conceded.
+- Lower `ERA` indicates fewer earned runs allowed per nine innings.
+- Lower `BBA` indicates fewer walks issued.
+- Higher `SOA` indicates more strikeouts by the pitching staff.
+
+**Relevance to Win Prediction:** Effective pitching can reduce opponents' scoring opportunities and contribute to winning games.
+
+---
+
+## 5. Defensive Statistics — 3 Features
+
+These variables describe team fielding performance.
+
+| No. | Column | Data Type | Definition | Unit |
+|---:|---|---|---|---|
+| 22 | `E` | Integer | Total fielding errors committed | Errors |
+| 23 | `DP` | Numeric | Total double plays turned | Double plays |
+| 24 | `FP` | Float | Fielding percentage | Proportion |
+
+### Business Rationale
+
+Defensive performance measures a team's ability to convert fielding opportunities into outs and limit fielding mistakes.
+
+Examples:
+
+- Lower `E` indicates fewer recorded fielding errors.
+- Higher `FP` indicates a greater proportion of defensive chances handled successfully.
+- `DP` measures the number of double plays completed.
+
+**Relevance to Win Prediction:** Strong defensive performance may help prevent opposing runs and support team success.
+
+---
+
+## 6. League Scoring Context — 1 Feature
+
+| No. | Column | Data Type | Definition | Purpose |
+|---:|---|---|---|---|
+| 25 | `mlb_rpg` | Float | MLB league-level runs-per-game metric | Represents the historical scoring environment |
+
+### Business Rationale
+
+The scoring environment changes across baseball history.
+
+For example, 700 runs scored in a low-scoring historical period may represent stronger relative offensive performance than 700 runs in a high-scoring period.
+
+The `mlb_rpg` feature provides additional league-level context for evaluating team performance.
+
+**Data Definition Note:** The exact aggregation and calculation used to construct `mlb_rpg` should be verified against the original dataset preparation code.
+
+---
+
+## 7. Historical Era Indicators — 8 Features
+
+The dataset includes eight historical era indicators.
+
+These are binary variables representing whether a team-season belongs to a particular historical era category.
+
+| No. | Column | Data Type | Definition |
+|---:|---|---|---|
+| 26 | `era_1` | Boolean | Historical era category 1 |
+| 27 | `era_2` | Boolean | Historical era category 2 |
+| 28 | `era_3` | Boolean | Historical era category 3 |
+| 29 | `era_4` | Boolean | Historical era category 4 |
+| 30 | `era_5` | Boolean | Historical era category 5 |
+| 31 | `era_6` | Boolean | Historical era category 6 |
+| 32 | `era_7` | Boolean | Historical era category 7 |
+| 33 | `era_8` | Boolean | Historical era category 8 |
+
+### Encoding
+
+- `True` or `1` = Observation belongs to the historical era.
+- `False` or `0` = Observation does not belong to the historical era.
+
+### Business Rationale
+
+Baseball has changed substantially across historical periods, including changes in game rules, pitching usage, offensive performance and team strategies.
+
+Era indicators allow Lasso Regression to account for differences between historical baseball periods.
+
+**Data Definition Note:** The specific year boundaries represented by `era_1` through `era_8` must be verified against the feature-creation code. They should not be assumed from the indicator names alone.
+
+---
+
+## 8. Historical Decade Indicators — 11 Features
+
+These variables represent the decade in which the baseball season occurred.
+
+| No. | Column | Data Type | Definition |
+|---:|---|---|---|
+| 34 | `decade_1910` | Boolean | Season occurred from 1910 to 1919 |
+| 35 | `decade_1920` | Boolean | Season occurred from 1920 to 1929 |
+| 36 | `decade_1930` | Boolean | Season occurred from 1930 to 1939 |
+| 37 | `decade_1940` | Boolean | Season occurred from 1940 to 1949 |
+| 38 | `decade_1950` | Boolean | Season occurred from 1950 to 1959 |
+| 39 | `decade_1960` | Boolean | Season occurred from 1960 to 1969 |
+| 40 | `decade_1970` | Boolean | Season occurred from 1970 to 1979 |
+| 41 | `decade_1980` | Boolean | Season occurred from 1980 to 1989 |
+| 42 | `decade_1990` | Boolean | Season occurred from 1990 to 1999 |
+| 43 | `decade_2000` | Boolean | Season occurred from 2000 to 2009 |
+| 44 | `decade_2010` | Boolean | Season occurred from 2010 to 2019 |
+
+### Encoding
+
+Example: For a baseball team in 1995:
+
+- `decade_1990 = True`
+- Other listed decade indicators = False
+
+The dataset does not include a separate `decade_1900` predictor. For seasons in the 1900s, all listed decade indicators would be False.
+
+### Business Rationale
+
+The decade indicators help the model account for broader historical changes in baseball, including shifts in scoring levels, player performance and playing strategies.
+
+**Total Baseline Features = 44**
+
+---
+
+## 9. Feature Engineering — 4 Additional Features
+
+Four features were introduced to improve the predictive representation available to the Lasso Regression model.
+
+The final dataset contains **48 features**.
+
+### Feature 45 — Runs Scored per Game
+
+| Property | Definition |
+|---|---|
+| Column | `R_per_game` |
+| Data Type | Float |
+| Formula | `R / G` |
+| Category | Ratio-based feature engineering |
+| Purpose | Average team runs scored per game |
+
+#### Formula
+
+\[
+R_{\text{per game}}=\frac{R}{G}
+\]
+
+Where:
+
+- `R` = Total runs scored.
+- `G` = Total games played.
+
+#### Example
+
+A team scores 800 runs over 160 games.
+
+\[
+800/160=5.0
+\]
+
+The team averages **5 runs per game**.
+
+#### Predictive Rationale
+
+This feature normalizes scoring production across seasons with different numbers of games played.
+
+---
+
+### Feature 46 — Runs Allowed per Game
+
+| Property | Definition |
+|---|---|
+| Column | `RA_per_game` |
+| Data Type | Float |
+| Formula | `RA / G` |
+| Category | Ratio-based feature engineering |
+| Purpose | Average opponent runs allowed per game |
+
+#### Formula
+
+\[
+RA_{\text{per game}}=\frac{RA}{G}
+\]
+
+Where:
+
+- `RA` = Total runs allowed.
+- `G` = Games played.
+
+#### Example
+
+A team allows 640 runs over 160 games.
+
+\[
+640/160=4.0
+\]
+
+The team allows **4 runs per game**.
+
+#### Predictive Rationale
+
+This variable measures the team's run-prevention performance on a per-game basis.
+
+---
+
+### Feature 47 — Run Differential
+
+| Property | Definition |
+|---|---|
+| Column | `Run_Differential` |
+| Data Type | Integer |
+| Formula | `R - RA` |
+| Category | Linear feature engineering |
+| Purpose | Difference between runs scored and runs allowed |
+
+#### Formula
+
+\[
+\text{Run Differential}=R-RA
+\]
+
+#### Example
+
+- Runs scored = 800
+- Runs allowed = 640
+
+\[
+800-640=160
+\]
+
+The team's Run Differential is **+160**.
+
+#### Predictive Rationale
+
+Run Differential combines offensive scoring and defensive run prevention into a single variable.
+
+A positive Run Differential means the team scored more runs than it allowed.
+
+This is a linear combination of existing variables and does not introduce mathematically independent information.
+
+Nevertheless, it provides a useful baseball-performance representation.
+
+---
+
+### Feature 48 — Pythagorean Expected Wins
+
+| Property | Definition |
+|---|---|
+| Column | `Pythagorean_Expected_Wins` |
+| Data Type | Float |
+| Formula | `G * R**2 / (R**2 + RA**2)` |
+| Category | Nonlinear feature engineering |
+| Purpose | Estimate expected team wins from scoring performance |
+| Status in Tuned 48-Feature Lasso | Selected |
+
+#### Formula
+
+\[
+\text{Pythagorean Expected Wins}
+=
+G\times\frac{R^2}{R^2+RA^2}
+\]
+
+Where:
+
+- `G` = Games played.
+- `R` = Runs scored.
+- `RA` = Runs allowed.
+
+#### Example
+
+Suppose:
+
+- Games played = 160
+- Runs scored = 800
+- Runs allowed = 640
+
+\[
+160\times\frac{800^2}{800^2+640^2}
+\]
+
+\[
+=160\times\frac{640000}{1049600}
+\]
+
+\[
+\approx97.56
+\]
+
+The team's estimated Pythagorean Expected Wins is approximately **97.6 wins**.
+
+This is a model-based estimate, not the actual recorded wins.
+
+#### Why Is This Nonlinear Feature Engineering?
+
+The formula uses squares and a ratio involving multiple variables.
+
+Unlike Run Differential, it describes a nonlinear relationship between runs scored, runs allowed and expected wins.
+
+Although Lasso Regression is linear in its fitted coefficients, adding a nonlinear feature enables its predictions to depend nonlinearly on the original baseball statistics.
+
+#### Experimental Finding
+
+In your tuned 48-feature Lasso model:
+
+- Best Alpha = 0.01
+- Pythagorean Expected Wins was retained.
+- Standardized coefficient = +6.410727.
+- CV MAE improved compared with the original 44-feature configuration.
+
+The coefficient is associated with the standardized engineered feature and must not be interpreted as a causal effect or a direct increase of 6.41 wins for every original-unit increase.
+
+**Total Final Features = 44 + 4 = 48**
+
+---
+
+## 10. Variables Excluded from Model Inputs
+
+The following variables are not part of the 48-feature predictor matrix.
+
+| Column | Data Type | Description | Exclusion Rationale |
+|---|---|---|---|
+| `W` | Integer | Actual team wins | Regression target |
+| `ID` | Integer | Dataset identification number | Identifier, not a predictive feature |
+| `teamID` | String | MLB team identifier | Excluded from the current modelling feature set |
+| `yearID` | Integer | Season year | Historical information is represented through other variables |
+| `year_label` | Numeric / categorical | Year label for analysis | Descriptive field |
+| `decade_label` | String | Decade category | Represented using decade indicators |
+| `win_bins` | Categorical / integer | Grouped win categories | Derived from target `W`; leakage risk |
+| `index` | Integer | Row index, where present | Technical identifier |
+
+**Important:** `win_bins` must not be used to predict `W` because it is derived from the target variable.
+
+---
+
+## 11. Preprocessing and Validation Rules
+
+| Step | Procedure | Rationale |
+|---|---|---|
+| Train/Test Split | 80/20 | Evaluate on observations excluded from model training |
+| Feature Engineering | Create four additional predictors | Improve baseball-performance representation |
+| Feature Scaling | StandardScaler | Put numerical features on comparable scales |
+| Boolean Indicators | Passed through preprocessing | Preserve historical category indicators |
+| Lasso Regularization | L1 | Shrink coefficients and perform feature selection |
+| Alpha Tuning | GridSearchCV | Select regularization strength |
+| Cross-Validation | 5 folds | Estimate model performance across training partitions |
+| Nested CV | 5 outer / 3 inner folds | Evaluate the alpha-tuning procedure |
+| Testing | Evaluate on 283 observations | Measure held-out prediction accuracy |
+| Kaggle Submission | 400 whole-number predictions | Evaluate against hidden competition labels |
+
+Numerical scaling was performed within the modelling pipeline to prevent validation-fold information from affecting training-fold preprocessing.
+
+Engineered feature formulas must be applied consistently to training, testing and Kaggle prediction data.
+
+---
+
+## 12. Lasso Feature Selection Results
+
+The tuned 48-feature model used L1 regularization.
+
+| Feature Selection Metric | Result |
+|---|---:|
+| Total Input Features | 48 |
+| Selected Features | 32 |
+| Eliminated Features | 16 |
+| Selected Percentage | 66.7% |
+| Eliminated Percentage | 33.3% |
+| Best Alpha | 0.01 |
+
+Lasso automatically assigned zero coefficients to 16 predictors.
+
+The remaining 32 predictors had nonzero coefficients.
+
+Pythagorean Expected Wins was one of the retained features.
+
+**Interpretation:** Lasso attempts to retain a useful combination of predictors while penalizing model complexity. Features receiving zero coefficients are not necessarily useless individually; they may be redundant given the other variables.
+
+---
+
+## 13. Model Performance — 48-Feature Lasso
+
+### Training and Testing Results
+
+| Evaluation Metric | Training | Testing |
+|---|---:|---:|
+| MAE ↓ | 2.6485 | 2.6904 |
+| RMSE ↓ | 3.3283 | 3.3029 |
+| R² ↑ | 0.9387 | 0.9317 |
+
+### Cross-Validation Results
+
+| Metric | Result |
+|---|---:|
+| Best Alpha | 0.01 |
+| Five-Fold CV MAE | 2.7628 |
+| Nested CV MAE | 2.7517 |
+| Nested CV RMSE | 3.4637 |
+| Nested CV R² | 0.9325 |
+
+### Kaggle Submission Results
+
+| Property | Result |
+|---|---|
+| Submission Filename | `lasso_submission_48.csv` |
+| Prediction Records | 400 |
+| Submission Columns | `ID`, `W` |
+| Prediction Format | Whole-number wins |
+| Public Evaluation Records | 200 |
+| Private Evaluation Records | 200 |
+| **Kaggle Public MAE** | **2.9100** |
+
+The public Kaggle score was calculated on 200 hidden observations.
+
+The final private leaderboard score is not yet known.
+
+---
+
+## 14. Comparison with Other Lasso Experiments
+
+| Metric | 44 Features | 47 Features | **48 Features** | 56 Features |
+|---|---:|---:|---:|---:|
+| Standard CV MAE ↓ | 2.8190 | 2.8195 | 2.7628 | **2.7583** |
+| Nested CV MAE ↓ | 2.7924 | 2.7947 | 2.7517 | **2.7398** |
+| Test MAE ↓ | 2.6898 | 2.6883 | 2.6904 | **2.6826** |
+| Kaggle Public MAE ↓ | 3.0000 | 3.0000 | **2.9100** | 2.9300 |
+
+### Key Observation
+
+The 56-feature model achieved slightly better local validation and testing results.
+
+However, the 48-feature model achieved the lowest Kaggle Public MAE among the listed submissions.
+
+This suggests that model complexity and the number of engineered features do not necessarily translate into improved performance on every unseen evaluation sample.
+
+The public result alone does not establish that the 48-feature model will also perform better on the private leaderboard.
+
+---
+
+## 15. Data Dictionary Summary
+
+| Group | Features |
+|---|---|
+| Offensive | `G`, `R`, `AB`, `H`, `2B`, `3B`, `HR`, `BB`, `SO`, `SB` |
+| Pitching | `RA`, `ER`, `ERA`, `CG`, `SHO`, `SV`, `IPouts`, `HA`, `HRA`, `BBA`, `SOA` |
+| Defensive | `E`, `DP`, `FP` |
+| League Context | `mlb_rpg` |
+| Historical Era | `era_1` through `era_8` |
+| Historical Decades | `decade_1910` through `decade_2010` |
+| Engineered | `R_per_game`, `RA_per_game`, `Run_Differential`, `Pythagorean_Expected_Wins` |
+| Target | `W` |
+
+**Final Modelling Feature Count: 48**
+
+**Target Variable: W — Total Team Wins**
+
+---
+
+## 16. Conclusion
+
+The 48-feature Moneyball Lasso Regression model combines 44 baseline predictors with four baseball-informed engineered features.
+
+The engineered variables represent per-game scoring performance, Run Differential and nonlinear Pythagorean Expected Wins.
+
+The model selected 32 of the 48 predictors through L1 regularization.
+
+Its reported results included:
+
+- **Training MAE:** 2.6485
+- **Testing MAE:** 2.6904
+- **Five-Fold CV MAE:** 2.7628
+- **Nested CV MAE:** 2.7517
+- **Kaggle Public MAE:** 2.9100
+
+The 48-feature model achieved a better Kaggle Public MAE than the 44-, 47- and 56-feature Lasso submissions.
+
+This provides an encouraging result for domain-informed nonlinear feature engineering.
+
+However, because the public leaderboard uses only half of the competition's hidden prediction dataset, the final private score may differ.
+
+**Overall, the 48-feature Lasso is the current leading model based on Kaggle Public MAE, while the 56-feature model remains the strongest candidate based on local cross-validation and testing MAE.**
+
+The data dictionary documents the variables, definitions, feature-engineering formulas and evaluation results needed for reproducibility and interpretation of the 48-feature Lasso experiment.
